@@ -38,9 +38,12 @@ class App(Tk):
     self.geometry('350x200')
     self.resizable(False, False)
     
+    
+    app.mainloop()   
+    
 if __name__ == "__main__":
   app = App()
   StartFrame(app)
-  app.mainloop()
+ 
 
 

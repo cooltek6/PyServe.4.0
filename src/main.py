@@ -1,47 +1,53 @@
 # pyserve.4
 # main.py
 
-#import tkinter as tk
-
+import tkinter as tk
 from tkinter import *
 from tkinter import ttk
-import tkinter.messagebox as msg
-from tkinter.messagebox import showerror 
-from tinydb import TinyDB, Query
+#import tkinter.messagebox as msg
+#from tkinter.messagebox import showerror
+#from tinydb import TinyDB, Query
 
 
-class StartFrame(Frame):
-  def __init__(self, container):
+class StartFrame(ttk.Frame):
+  def __init__(self, container: ttk.Frame):
     super().__init__(container)
-    
 
-    # text vars for the buttons
-    # self.var_custy = tk.StringVar()
-    # self.var_custy.set("PyServe.4.0")
-    
-    # create the banner and grid it    
+    # create the banner and grid it
     self.lbl_banner = ttk.Label(self,
-      text="PyServe.4.0",
-      #bg='dodgerblue',
-      foreground='white',
-      pady=15)
+                                text="PyServe.4.0",
+                                background='dodgerblue',
+                                foreground='white',
+                                anchor='center')
     self.lbl_banner.grid(
       row=0,
       column=0,
       columnspan=3,
-      sticky=(E,W))    
+	    pady=15,
+      sticky='ew')
+    # create three buttons and grid them
+    self.btn_custy = ttk.Button(self, width=15, text='New Customer')
+    self.btn_custy.grid(row=1, column=0, padx=5, pady=5)
+    self.btn_order = ttk.Button(self, width=15, text='New Order')
+    self.btn_order.grid(row=1, column=1, padx=5, pady=5)
+    self.btn_cancel = ttk.Button(self, width=15, text='Cancel')
+    self.btn_cancel.grid(row=1, column=2, padx=5, pady=5)
+
+    self.grid(column=0, row=0, padx=5, pady=5, sticky='nsew')
 
 
-class App(Tk):
+class App(tk.Tk):
   def __init__(self):
     super().__init__()
     self.title('PyServe.4')
-    self.geometry('350x200')
+    self.geometry('433x200')
     self.resizable(False, False)
+
+
     
 if __name__ == "__main__":
   app = App()
   StartFrame(app)
-  app.mainloop()
+app.mainloop()
 
 
