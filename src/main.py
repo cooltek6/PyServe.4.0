@@ -2,10 +2,10 @@
 # main.py
 
 import tkinter as tk
-# from tkinter import *
+from tkinter import *
 from tkinter import ttk
-# import tkinter.messagebox as msg
-# from tkinter.messagebox import showerror
+import tkinter.messagebox as msg
+from tkinter.messagebox import showerror
 from tinydb import TinyDB, Query
 
 # create an instance of the db globally
@@ -70,9 +70,23 @@ class NewCustyFrame(ttk.Frame):
 		self.ent_custy_email = ttk.Entry(self)
 		self.ent_custy_email.grid(row=6, column=1, padx=5, pady=5, sticky='ew')
 		# create two buttons: cancel and submit and grid them
-		self.btn_submit = tk.Button(self, width=10, text="Submit", bg="green", fg="white", command=self.submit)
+		# using a tk button instead of a ttk is easier without using Style  
+		self.btn_submit = tk.Button(
+      		self, 
+        	width=10, 
+         	text="Submit", 
+          	bg="green", 
+           	fg="white", 
+            command=self.submit)
 		self.btn_submit.grid(row=2, column=2, padx=5, pady=5, sticky='ew')
-		self.btn_cancel = tk.Button(self, width=10, text="Cancel", bg="red", fg="white", command=self.cancel)
+  
+		self.btn_cancel = tk.Button(
+      		self, 
+        	width=10, 
+         	text="Cancel", 
+          	bg="red", 
+           	fg="white", 
+            command=lambda: self.master.destroy())
 		self.btn_cancel.grid(row=4, column=2, padx=5, pady=5, sticky='ew')
 
 		# grid the frame inside the window
@@ -86,11 +100,20 @@ class NewCustyFrame(ttk.Frame):
 		custy_zipcode = self.ent_custy_zipcode.get()
 		custy_phone = self.ent_custy_phone.get()
 		custy_email = self.ent_custy_email.get()
-
-
-	def cancel(self):
-		self.destroy()
-
+		Customer = Query()
+		if db.search(Customer.name == custy_name):
+			tk.messagebox.showerror("Error", "Customer already exists!")
+		else:
+			db.insert({
+				"name": custy_name,
+				"address": custy_address,
+				"city": custy_city,
+				"zipcode": custy_zipcode,
+				"phone": custy_phone,
+				"email": custy_email
+			})
+			tk.messagebox.showinfo("Success", "Customer added successfully!")
+			self.master.destroy()
 
 
 class StartFrame(ttk.Frame):
