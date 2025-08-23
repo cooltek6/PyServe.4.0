@@ -11,14 +11,14 @@ from tinydb import TinyDB, Query
 # create an instance of the db globally
 db = TinyDB("db.json")
 
-
 # create the new customer window
 class NewCustomer(tk.Toplevel):
 	def __init__(self, custy_window):
 		super().__init__(custy_window)
 		self.title("New Customer")
-		self.geometry("433x400")
+		self.geometry("419x600")
 		self.resizable(False, False)
+
 		# create the banner and grid it
 		self.lbl_banner = ttk.Label(
 			self,
@@ -35,15 +35,62 @@ class NewCustomer(tk.Toplevel):
 			ipady=10,
 			sticky="ew",
 		)
+		self.new_custy_frame = NewCustyFrame(self)
 
 
 # create the new customer frame
 class NewCustyFrame(ttk.Frame):
 	def __init__(self, container: ttk.Frame):
 		super().__init__(container)
+		# create six labels for input and grid them
+		#self.NewCustomer = None
+		self.lbl_custy_name = ttk.Label(self, text="Customer Name:")
+		self.lbl_custy_name.grid(row=1, column=0, padx=5, pady=5, sticky='e')
+		self.lbl_custy_address = ttk.Label(self, text="Street Address:")
+		self.lbl_custy_address.grid(row=2, column=0, padx=5, pady=5, sticky='e')
+		self.lbl_custy_city = ttk.Label(self, text="City:")
+		self.lbl_custy_city.grid(row=3, column=0, padx=5, pady=5, sticky='e')
+		self.lbl_custy_zipcode = ttk.Label(self, text="Zip Code:")
+		self.lbl_custy_zipcode.grid(row=4, column=0, padx=5, pady=5, sticky='e')
+		self.lbl_custy_phone = ttk.Label(self, text="Phone Number:")
+		self.lbl_custy_phone.grid(row=5, column=0, padx=5, pady=5, sticky='e')
+		self.lbl_custy_email = ttk.Label(self, text="Email Address:")
+		self.lbl_custy_email.grid(row=6, column=0, padx=5, pady=5, sticky='e')
+		# create six entry widgets to go with each label and grid them
+		self.ent_custy_name = ttk.Entry(self)
+		self.ent_custy_name.grid(row=1, column=1, padx=5, pady=5, sticky='ew')
+		self.ent_custy_address = ttk.Entry(self)
+		self.ent_custy_address.grid(row=2, column=1, padx=5, pady=5, sticky='ew')
+		self.ent_custy_city = ttk.Entry(self)
+		self.ent_custy_city.grid(row=3, column=1, padx=5, pady=5, sticky='ew')
+		self.ent_custy_zipcode = ttk.Entry(self)
+		self.ent_custy_zipcode.grid(row=4, column=1, padx=5, pady=5, sticky='ew')
+		self.ent_custy_phone = ttk.Entry(self)
+		self.ent_custy_phone.grid(row=5, column=1, padx=5, pady=5, sticky='ew')
+		self.ent_custy_email = ttk.Entry(self)
+		self.ent_custy_email.grid(row=6, column=1, padx=5, pady=5, sticky='ew')
+		# create two buttons: cancel and submit and grid them
+		self.btn_submit = tk.Button(self, width=10, text="Submit", bg="green", fg="white", command=self.submit)
+		self.btn_submit.grid(row=2, column=2, padx=5, pady=5, sticky='ew')
+		self.btn_cancel = tk.Button(self, width=10, text="Cancel", bg="red", fg="white", command=self.cancel)
+		self.btn_cancel.grid(row=4, column=2, padx=5, pady=5, sticky='ew')
+
+		# grid the frame inside the window
+		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
+
+		# create a query to check if the customer already exists
+	def submit(self):
+		custy_name = self.ent_custy_name.get()
+		custy_address = self.ent_custy_address.get()
+		custy_city = self.ent_custy_city.get()
+		custy_zipcode = self.ent_custy_zipcode.get()
+		custy_phone = self.ent_custy_phone.get()
+		custy_email = self.ent_custy_email.get()
 
 
-# ... existing code ...
+	def cancel(self):
+		self.destroy()
+
 
 
 class StartFrame(ttk.Frame):
@@ -51,14 +98,11 @@ class StartFrame(ttk.Frame):
 		super().__init__(container)
 
 		# create three buttons and grid them
-		self.btn_custy = ttk.Button(self, width=15, text="New Customer",
-		                            command=self.click_newcustomer)
+		self.btn_custy = ttk.Button(self, width=15, text="New Customer", command=self.click_newcustomer)
 		self.btn_custy.grid(row=1, column=0, padx=5, pady=5)
-		self.btn_order = ttk.Button(self, width=15, text="New Order",
-		                            command=self.click_neworder)
+		self.btn_order = ttk.Button(self, width=15, text="New Order", command=self.click_neworder)
 		self.btn_order.grid(row=1, column=1, padx=5, pady=5)
-		self.btn_cancel = ttk.Button(self, width=15, text="Cancel",
-		                             command=self.click_cancel)
+		self.btn_cancel = ttk.Button(self, width=15, text="Cancel", command=self.click_cancel)
 		self.btn_cancel.grid(row=1, column=2, padx=5, pady=5)
 		# grid the frame inside the window
 		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
@@ -70,8 +114,9 @@ class StartFrame(ttk.Frame):
 	def click_neworder(self):
 		pass
 
-	def click_cancel(self):
-		pass
+	@staticmethod
+	def click_cancel():
+		main_window.destroy()
 
 
 class App(tk.Tk):
