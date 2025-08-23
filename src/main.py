@@ -6,7 +6,10 @@ import tkinter as tk
 from tkinter import ttk
 #import tkinter.messagebox as msg
 #from tkinter.messagebox import showerror
-#from tinydb import TinyDB, Query
+from tinydb import TinyDB, Query
+
+# create an instance of the db globally
+db = TinyDB("db.json")
 
 class NewCustomer(tk.Toplevel):
     def __init__(self, main_window):
@@ -19,22 +22,7 @@ class NewCustomer(tk.Toplevel):
 class StartFrame(ttk.Frame):
     def __init__(self, container: ttk.Frame):
         super().__init__(container)
-        # create the banner and grid it
-        self.lbl_banner = ttk.Label(
-            self,
-            text="PyServe.4.0",
-            background="dodgerblue",
-            foreground="white",
-            anchor="center",
-        )
-        self.lbl_banner.grid(
-            row=0,
-            column=0,
-            columnspan=3,
-            pady=15,
-            ipady=10,
-            sticky="ew",
-        )
+
         
         # create three buttons and grid them
         self.btn_custy = ttk.Button(self, width=15, text="New Customer", command=self.click_newcustomer)
@@ -44,7 +32,7 @@ class StartFrame(ttk.Frame):
         self.btn_cancel = ttk.Button(self, width=15, text="Cancel", command=self.click_cancel)
         self.btn_cancel.grid(row=1, column=2, padx=5, pady=5)
         # grid the frame inside the window
-        self.grid(column=0, row=0, padx=5, pady=5, sticky="nsew")
+        self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
 
     def click_newcustomer(self):
         new_customer_window = NewCustomer(self)
@@ -62,6 +50,23 @@ class App(tk.Tk):
         self.title("PyServe.4")
         self.geometry("433x200")
         self.resizable(False, False)
+
+        # create the banner and grid it
+        self.lbl_banner = ttk.Label(
+	        self,
+	        text="PyServe.4.0",
+	        background="dodgerblue",
+	        foreground="white",
+	        anchor="center",
+        )
+        self.lbl_banner.grid(
+	        row=0,
+	        column=0,
+	        columnspan=3,
+	        pady=15,
+	        ipady=10,
+	        sticky="ew",
+        )
 
 if __name__ == "__main__":
     main_window = App()
