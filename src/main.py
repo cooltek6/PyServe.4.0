@@ -11,12 +11,73 @@ from tinydb import TinyDB, Query
 # create an instance of the db globally
 db = TinyDB("db.json")
 
+# create the new service order window
+class NewOrder(tk.Toplevel):
+	def __init__(self, container):
+		super().__init__(container)
+		self.title("New Customer")
+		self.geometry("419x350")
+		self.resizable(False, False)
+
+		# create the banner and grid it
+		self.lbl_banner = ttk.Label(
+			self,
+			text="PyServe.4.0",
+			background="dodgerblue",
+			foreground="white",
+			anchor="center",
+		)
+		self.lbl_banner.grid(
+			row=0,
+			column=0,
+			columnspan=3,
+			pady=15,
+			ipady=10,
+			sticky="e",
+		)
+		self.new_order_frame = NewOrderFrame(self)
+  
+# create the new order frame
+class NewOrderFrame(ttk.Frame):
+	def __init__(self, container: ttk.Frame):
+		super().__init__(container)
+		# create labels and entries and submit button for order input and grid them
+		self.lbl_order_custy = ttk.Label(self, text="Customer Name:")
+		self.lbl_order_custy.grid(row=1, column=0, padx=5, pady=5, sticky='e')
+		self.ent_order_custy = ttk.Entry(self)
+		self.ent_order_custy.grid(row=1, column=1, padx=5, pady=5, sticky='e')
+		self.btn_submit = tk.Button(
+			self,
+			width=10,
+			text="Submit",
+			bg="green",
+			fg="white",
+			command=self.submit_order)
+		self.btn_submit.grid(row=1, column=2, padx=5, pady=5, sticky='e')
+
+		# grid the frame inside the window
+		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
+  
+	# create the submit function
+	def submit_order(self):
+		custy_name = self.ent_order_custy.get()
+		# create a query to check if the customer exists		
+		Customer = Query()
+		if db.search(Customer.name == custy_name):
+			# if the customer exists, show a messagebox with their info
+			custy_info = db.search(Customer.name == custy_name)[0]
+			info_message = f"Customer Found!\n\nName: {custy_info['name']}\nAddress: {custy_info['address']}\nCity: {custy_info['city']}\nZipcode: {custy_info['zipcode']}\nPhone: {custy_info['phone']}\nEmail: {custy_info['email']}"
+			tk.messagebox.showinfo("Customer Found", info_message)
+		else:
+			tk.messagebox.showerror("Error", "Customer not found")
+     
+
 # create the new customer window
 class NewCustomer(tk.Toplevel):
-	def __init__(self, custy_window):
-		super().__init__(custy_window)
+	def __init__(self, container):
+		super().__init__(container)
 		self.title("New Customer")
-		self.geometry("419x600")
+		self.geometry("419x350")
 		self.resizable(False, False)
 
 		# create the banner and grid it
@@ -43,7 +104,6 @@ class NewCustyFrame(ttk.Frame):
 	def __init__(self, container: ttk.Frame):
 		super().__init__(container)
 		# create six labels for input and grid them
-		#self.NewCustomer = None
 		self.lbl_custy_name = ttk.Label(self, text="Customer Name:")
 		self.lbl_custy_name.grid(row=1, column=0, padx=5, pady=5, sticky='e')
 		self.lbl_custy_address = ttk.Label(self, text="Street Address:")
@@ -70,7 +130,7 @@ class NewCustyFrame(ttk.Frame):
 		self.ent_custy_email = ttk.Entry(self)
 		self.ent_custy_email.grid(row=6, column=1, padx=5, pady=5, sticky='ew')
 		# create two buttons: cancel and submit and grid them
-		# using a tk button instead of a ttk is easier without using Style  
+		# using a tk button instead of a ttk because it is easier without using Style()  
 		self.btn_submit = tk.Button(
       		self, 
         	width=10, 
@@ -135,7 +195,8 @@ class StartFrame(ttk.Frame):
 		new_customer_window.grab_set()
 
 	def click_neworder(self):
-		pass
+		new_order_window = NewOrder(self)
+		new_order_window.grab_set()
 
 	@staticmethod
 	def click_cancel():
