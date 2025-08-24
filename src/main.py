@@ -11,6 +11,62 @@ from tinydb import TinyDB, Query
 # create an instance of the db globally
 db = TinyDB("db.json")
 
+# create a printable version of the db for testing
+def print_db():
+	print(db.all())
+print_db()
+
+# create a printable service order form and populate it with custy info
+class ServiceOrderForm:
+	def __init__(self, custy_info):
+		self.custy_info = custy_info
+
+	# create a method to print the form
+	def print_form(self):
+		form = f"""
+		Crossroads Technical Services
+		Service Order Form
+		-------------------
+		Customer Name: {self.custy_info['name']}
+		Address: {self.custy_info['address']}
+		City: {self.custy_info['city']}
+		Zipcode: {self.custy_info['zipcode']}
+		Phone: {self.custy_info['phone']}
+		Email: {self.custy_info['email']}
+		-------------------
+		Description of Work:
+		
+		______________________
+		
+		Service Performed:
+  
+  
+  
+		
+		______________________
+		
+		Parts Used:
+  
+  
+  
+  
+		
+		______________________
+		
+		Notes:
+  
+  
+  
+  
+		______________________
+
+		Technician Signature: _____________   Date: _____________
+  
+		Customer Signature: _____________   Date: _____________
+		"""
+		print(form)
+
+
 # create the new service order window
 class NewOrder(tk.Toplevel):
 	def __init__(self, container):
@@ -41,6 +97,10 @@ class NewOrder(tk.Toplevel):
 class NewOrderFrame(ttk.Frame):
 	def __init__(self, container: ttk.Frame):
 		super().__init__(container)
+  
+  		# grid the frame inside the window
+		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
+  
 		# create labels and entries and submit button for order input and grid them
 		self.lbl_order_custy = ttk.Label(self, text="Customer Name:")
 		self.lbl_order_custy.grid(row=1, column=0, padx=5, pady=5, sticky='e')
@@ -54,9 +114,6 @@ class NewOrderFrame(ttk.Frame):
 			fg="white",
 			command=self.submit_order)
 		self.btn_submit.grid(row=1, column=2, padx=5, pady=5, sticky='e')
-
-		# grid the frame inside the window
-		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
   
 	# create the submit function
 	def submit_order(self):
@@ -70,7 +127,11 @@ class NewOrderFrame(ttk.Frame):
 			tk.messagebox.showinfo("Customer Found", info_message)
 		else:
 			tk.messagebox.showerror("Error", "Customer not found")
-     
+    
+		self.sevice_order_form = ServiceOrderForm(custy_info)
+		self.sevice_order_form.print_form()
+		self.master.destroy()
+		     
 
 # create the new customer window
 class NewCustomer(tk.Toplevel):
@@ -103,6 +164,7 @@ class NewCustomer(tk.Toplevel):
 class NewCustyFrame(ttk.Frame):
 	def __init__(self, container: ttk.Frame):
 		super().__init__(container)
+  
 		# create six labels for input and grid them
 		self.lbl_custy_name = ttk.Label(self, text="Customer Name:")
 		self.lbl_custy_name.grid(row=1, column=0, padx=5, pady=5, sticky='e')
@@ -116,6 +178,7 @@ class NewCustyFrame(ttk.Frame):
 		self.lbl_custy_phone.grid(row=5, column=0, padx=5, pady=5, sticky='e')
 		self.lbl_custy_email = ttk.Label(self, text="Email Address:")
 		self.lbl_custy_email.grid(row=6, column=0, padx=5, pady=5, sticky='e')
+  
 		# create six entry widgets to go with each label and grid them
 		self.ent_custy_name = ttk.Entry(self)
 		self.ent_custy_name.grid(row=1, column=1, padx=5, pady=5, sticky='ew')
@@ -129,6 +192,7 @@ class NewCustyFrame(ttk.Frame):
 		self.ent_custy_phone.grid(row=5, column=1, padx=5, pady=5, sticky='ew')
 		self.ent_custy_email = ttk.Entry(self)
 		self.ent_custy_email.grid(row=6, column=1, padx=5, pady=5, sticky='ew')
+  
 		# create two buttons: cancel and submit and grid them
 		# using a tk button instead of a ttk because it is easier without using Style()  
 		self.btn_submit = tk.Button(
