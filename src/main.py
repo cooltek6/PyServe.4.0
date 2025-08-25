@@ -18,32 +18,34 @@ print_db()
 
 # create a printable service order form and populate it with custy info
 class ServiceOrderForm:
-	def __init__(self, custy_info):
+	def __init__(self, custy_info, work_description):
 		self.custy_info = custy_info
+		self.work_description = work_description
 
 	# create a method to print the form
 	def print_form(self):
 		form = f"""
 		Crossroads Technical Services
 		Service Order Form
-		-------------------
+		-----------------------------------------------------
 		Customer Name: {self.custy_info['name']}
 		Address: {self.custy_info['address']}
 		City: {self.custy_info['city']}
 		Zipcode: {self.custy_info['zipcode']}
 		Phone: {self.custy_info['phone']}
 		Email: {self.custy_info['email']}
-		-------------------
-		Description of Work:
+		-----------------------------------------------------
+		Work Description: {self.work_description}
+
 		
-		______________________
+		_____________________________________________________
 		
 		Service Performed:
-  
+
   
   
 		
-		______________________
+		_____________________________________________________
 		
 		Parts Used:
   
@@ -51,18 +53,18 @@ class ServiceOrderForm:
   
   
 		
-		______________________
+		______________________________________________________
 		
 		Notes:
   
   
   
   
-		______________________
+		______________________________________________________
 
-		Technician Signature: _____________   Date: _____________
+		Technician Signature: __________________   Date: _____________
   
-		Customer Signature: _____________   Date: _____________
+		Customer Signature: __________________   Date: _____________
 		"""
 		print(form)
 
@@ -71,14 +73,14 @@ class ServiceOrderForm:
 class NewOrder(tk.Toplevel):
 	def __init__(self, container):
 		super().__init__(container)
-		self.title("New Customer")
+		self.title("PyServe.4.0")
 		self.geometry("419x350")
 		self.resizable(False, False)
 
 		# create the banner and grid it
 		self.lbl_banner = ttk.Label(
 			self,
-			text="PyServe.4.0",
+			text="New Work Order",
 			background="dodgerblue",
 			foreground="white",
 			anchor="center",
@@ -89,7 +91,7 @@ class NewOrder(tk.Toplevel):
 			columnspan=3,
 			pady=15,
 			ipady=10,
-			sticky="e",
+			sticky="ew",
 		)
 		self.new_order_frame = NewOrderFrame(self)
   
@@ -101,11 +103,17 @@ class NewOrderFrame(ttk.Frame):
   		# grid the frame inside the window
 		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
   
-		# create labels and entries and submit button for order input and grid them
+		# create labels, entries, labelframe, and submit button for order input and grid them
 		self.lbl_order_custy = ttk.Label(self, text="Customer Name:")
 		self.lbl_order_custy.grid(row=1, column=0, padx=5, pady=5, sticky='e')
 		self.ent_order_custy = ttk.Entry(self)
 		self.ent_order_custy.grid(row=1, column=1, padx=5, pady=5, sticky='e')
+		self.lbf_order_description = ttk.LabelFrame(self, text="Work to be done:")
+		self.lbf_order_description.grid(row=2, column=0, columnspan=3, padx=5, pady=5, sticky='ew')
+		self.ent_order_description = tk.Entry(self.lbf_order_description, width=48)
+		self.ent_order_description.grid(row=1, column=0, padx=5, pady=5, sticky='ewns')
+
+		# using a tk button instead of a ttk because it is easier without using Style()
 		self.btn_submit = tk.Button(
 			self,
 			width=10,
@@ -113,7 +121,16 @@ class NewOrderFrame(ttk.Frame):
 			bg="green",
 			fg="white",
 			command=self.submit_order)
-		self.btn_submit.grid(row=1, column=2, padx=5, pady=5, sticky='e')
+		self.btn_submit.grid(row=3, column=1, padx=5, pady=5, sticky='e')
+  
+		self.btn_cancel = tk.Button(
+			self,
+			width=10,
+			text="Cancel",
+			bg="red",
+			fg="white",
+			command=self.master.destroy)
+		self.btn_cancel.grid(row=3, column=2, padx=5, pady=5, sticky='e')
   
 	# create the submit function
 	def submit_order(self):
@@ -128,7 +145,7 @@ class NewOrderFrame(ttk.Frame):
 		else:
 			tk.messagebox.showerror("Error", "Customer not found")
     
-		self.sevice_order_form = ServiceOrderForm(custy_info)
+		self.sevice_order_form = ServiceOrderForm(custy_info, self.ent_order_description.get())
 		self.sevice_order_form.print_form()
 		self.master.destroy()
 		     
@@ -137,14 +154,14 @@ class NewOrderFrame(ttk.Frame):
 class NewCustomer(tk.Toplevel):
 	def __init__(self, container):
 		super().__init__(container)
-		self.title("New Customer")
+		self.title("PySeve.4.0")
 		self.geometry("419x350")
 		self.resizable(False, False)
 
 		# create the banner and grid it
 		self.lbl_banner = ttk.Label(
 			self,
-			text="PyServe.4.0",
+			text="New Customer",
 			background="dodgerblue",
 			foreground="white",
 			anchor="center",
@@ -194,7 +211,7 @@ class NewCustyFrame(ttk.Frame):
 		self.ent_custy_email.grid(row=6, column=1, padx=5, pady=5, sticky='ew')
   
 		# create two buttons: cancel and submit and grid them
-		# using a tk button instead of a ttk because it is easier without using Style()  
+		# using a tk button because it is easier without using Style()  
 		self.btn_submit = tk.Button(
       		self, 
         	width=10, 
@@ -245,12 +262,29 @@ class StartFrame(ttk.Frame):
 		super().__init__(container)
 
 		# create three buttons and grid them
-		self.btn_custy = ttk.Button(self, width=15, text="New Customer", command=self.click_newcustomer)
+		self.btn_custy = ttk.Button(	
+            self, 
+            width=15, 
+            text="New Customer", 
+            command=self.click_newcustomer)
 		self.btn_custy.grid(row=1, column=0, padx=5, pady=5)
-		self.btn_order = ttk.Button(self, width=15, text="New Order", command=self.click_neworder)
+  
+		self.btn_order = ttk.Button(
+      		self, 
+        	width=15, 
+         	text="New Order", 
+          	command=self.click_neworder)
 		self.btn_order.grid(row=1, column=1, padx=5, pady=5)
-		self.btn_cancel = ttk.Button(self, width=15, text="Cancel", command=self.click_cancel)
+  
+		self.btn_cancel = tk.Button(
+      		self, 
+            width=15, 
+            text="Cancel",
+            bg="red",
+            fg="white", 
+            command=self.click_cancel)
 		self.btn_cancel.grid(row=1, column=2, padx=5, pady=5)
+  
 		# grid the frame inside the window
 		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
 
@@ -270,14 +304,14 @@ class StartFrame(ttk.Frame):
 class App(tk.Tk):
 	def __init__(self):
 		super().__init__()
-		self.title("PyServe.4")
-		self.geometry("433x200")
+		self.title("PyServe.4.0")
+		self.geometry("448x200")
 		self.resizable(False, False)
 
 		# create the banner and grid it
 		self.lbl_banner = ttk.Label(
 			self,
-			text="PyServe.4.0",
+			text="Welcome to PyServe.4.0",
 			background="dodgerblue",
 			foreground="white",
 			anchor="center",
