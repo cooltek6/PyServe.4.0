@@ -99,8 +99,8 @@ class NewOrder(tk.Toplevel):
 class NewOrderFrame(ttk.Frame):
 	def __init__(self, container: ttk.Frame):
 		super().__init__(container)
-  
-  		# grid the frame inside the window
+
+		# grid the frame inside the window
 		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
   
 		# create labels, entries, labelframe, and submit button for order input and grid them
@@ -133,18 +133,19 @@ class NewOrderFrame(ttk.Frame):
 		self.btn_cancel.grid(row=3, column=2, padx=5, pady=5, sticky='e')
   
 	# create the submit function
-	def submit_order(self):
+	def submit_order(self) -> None:
 		custy_name = self.ent_order_custy.get()
 		# create a query to check if the customer exists		
-		Customer = Query()
-		if db.search(Customer.name == custy_name):
+		customer = Query()
+		if db.search(customer.name == custy_name):
 			# if the customer exists, show a messagebox with their info
-			custy_info = db.search(Customer.name == custy_name)[0]
+			custy_info = db.search(customer.name == custy_name)[0]
 			info_message = f"Customer Found!\n\nName: {custy_info['name']}\nAddress: {custy_info['address']}\nCity: {custy_info['city']}\nZipcode: {custy_info['zipcode']}\nPhone: {custy_info['phone']}\nEmail: {custy_info['email']}"
 			tk.messagebox.showinfo("Customer Found", info_message)
 		else:
+			# if the customer does not exist, show an error messagebox
 			tk.messagebox.showerror("Error", "Customer not found")
-    
+
 		self.sevice_order_form = ServiceOrderForm(custy_info, self.ent_order_description.get())
 		self.sevice_order_form.print_form()
 		self.master.destroy()
