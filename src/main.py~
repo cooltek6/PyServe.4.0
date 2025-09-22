@@ -140,7 +140,7 @@ class NewOrderFrame(ttk.Frame):
 		if db.search(customer.name == custy_name):
 			# if the customer exists, show a messagebox with their info
 			custy_info = db.search(customer.name == custy_name)[0]
-			info_message = f"Customer Found!\n\nName: {custy_info['name']}\nAddress: {custy_info['address']}\nCity: {custy_info['city']}\nZipcode: {custy_info['zipcode']}\nPhone: {custy_info['phone']}\nEmail: {custy_info['email']}"
+			info_message = f"Customer Found!\n\nName: {custy_info['name']}\nAddress: {custy_info['address']\nCity:custy_info['city']}\nZipcode: {custy_info['zipcode']}\nPhone: {custy_info['phone']}\nEmail: {custy_info['email']}"
 			tk.messagebox.showinfo("Customer Found", info_message)
 		else:
 			# if the customer does not exist, show an error messagebox
@@ -212,7 +212,7 @@ class NewCustyFrame(ttk.Frame):
 		self.ent_custy_email.grid(row=6, column=1, padx=5, pady=5, sticky='ew')
   
 		# create two buttons: cancel and submit and grid them
-		# using a tk button. easier without using Style() at this time  
+		# using a tk button because it is easier without using Style()  
 		self.btn_submit = tk.Button(
       		self, 
         	width=10, 
@@ -286,7 +286,7 @@ class StartFrame(ttk.Frame):
             command=self.click_cancel)
 		self.btn_cancel.grid(row=1, column=2, padx=5, pady=5)
   
-		# grid the frame inside the main window
+		# grid the frame inside the window
 		self.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
 
 	def click_newcustomer(self):
