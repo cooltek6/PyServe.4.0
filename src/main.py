@@ -10,6 +10,7 @@ from tinydb import TinyDB, Query
 import os
 import subprocess
 from datetime import datetime
+import json
 try:
 	from reportlab.lib.pagesizes import letter
 	from reportlab.pdfgen import canvas
@@ -26,10 +27,41 @@ def print_db():
 print_db()
 
 # create a printable service order form and populate it with custy info
+
+
+# load app settings (optional)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_config_path = os.path.join(BASE_DIR, "config", "app_settings.json")
+APP_SETTINGS = {}
+if os.path.exists(_config_path):
+    try:
+        with open(_config_path, "r", encoding="utf-8") as _f:
+            APP_SETTINGS = json.load(_f)
+    except Exception:
+        APP_SETTINGS = {}
+
+
 class ServiceOrderForm:
-	def __init__(self, custy_info, work_description):
+	def __init__(self, custy_info, work_description, pdf_font_name: str | None = None, pdf_font_size: int | None = None, pdf_font_path: str | None = None):
+		# use defaults from APP_SETTINGS when not provided
+		if pdf_font_name is None:
+			pdf_font_name = APP_SETTINGS.get("default_pdf_font_name", "Helvetica")
+		if pdf_font_size is None:
+			pdf_font_size = APP_SETTINGS.get("default_pdf_font_size", 10)
+		"""Initialize the form.
+
+		pdf_font_name/pdf_font_size/pdf_font_path control the font used when
+		rendering the PDF. pdf_font_path may point to a .ttf file — if provided
+		we'll attempt to register it under pdf_font_name.
+		"""
 		self.custy_info = custy_info
 		self.work_description = work_description
+		# PDF font configuration — name should be a ReportLab-registered font name
+		# or a base name like 'Courier', 'Helvetica', etc. If font_path is provided
+		# and points to a TTF file, it will be registered under font_name.
+		self.pdf_font_name = pdf_font_name
+		self.pdf_font_size = pdf_font_size
+		self.pdf_font_path = pdf_font_path
 
 	# replaced print_form with PDF generation + print
 	def _render_form_text(self) -> str:
@@ -37,14 +69,18 @@ class ServiceOrderForm:
 		return f"""
 		Crossroads Technical Services
 		Service Order Form
+  
 		-----------------------------------------------------
-		Customer Name: {self.custy_info.get('name','')}
-		Address: {self.custy_info.get('address','')}
-		City: {self.custy_info.get('city','')}
-		Zipcode: {self.custy_info.get('zipcode','')}
-		Phone: {self.custy_info.get('phone','')}
-		Email: {self.custy_info.get('email','')}
+  
+		Customer Name: 	{self.custy_info.get('name','')}
+		Address: 		{self.custy_info.get('address','')}
+		City: 			{self.custy_info.get('city','')}
+		Zipcode: 		{self.custy_info.get('zipcode','')}
+		Phone: 			{self.custy_info.get('phone','')}
+		Email: 			{self.custy_info.get('email','')}
+          
 		-----------------------------------------------------
+  
 		Work Description: {self.work_description}
 
 
@@ -57,20 +93,24 @@ class ServiceOrderForm:
 		_____________________________________________________
 
 		Parts Used:
+  
 
 
 
 		______________________________________________________
 
 		Notes:
+  
 
 
 
 		______________________________________________________
+  
 
 		Technician Signature: __________________   Date: _____________
+  
 
-		Customer Signature: __________________   Date: _____________
+		  Customer Signature: __________________   Date: _____________
 		"""
 
 	def save_as_pdf_and_print(self, printer_name: str | None = None, completed_dir: str | None = None) -> str:
@@ -95,15 +135,32 @@ class ServiceOrderForm:
 		pdf_path = os.path.join(completed_dir, filename)
 
 		# render PDF
-		c = canvas.Canvas(pdf_path, pagesize=letter)
-		text = c.beginText(40, 750)
-		text.setFont("Courier", 10)
+		cnvs = canvas.Canvas(pdf_path, pagesize=letter)
+		# If a TrueType font path is provided, register it under the desired name
+		try:
+			from reportlab.pdfbase import ttfonts
+			from reportlab.pdfbase import pdfmetrics
+		except Exception:
+			ttfonts = None
+			pdfmetrics = None
+
+		if self.pdf_font_path and ttfonts and pdfmetrics:
+			# register TTF under the requested font name
+			try:
+				font_obj = ttfonts.TTFont(self.pdf_font_name, self.pdf_font_path)
+				pdfmetrics.registerFont(font_obj)
+			except Exception:
+				# fallback: ignore registration and rely on built-ins
+				pass
+
+		text = cnvs.beginText(40, 750)
+		text.setFont(self.pdf_font_name, self.pdf_font_size)
 		for line in self._render_form_text().splitlines():
 			for chunk in [line[i:i+90] for i in range(0, len(line), 90)]:
 				text.textLine(chunk)
-		c.drawText(text)
-		c.showPage()
-		c.save()
+		cnvs.drawText(text)
+		cnvs.showPage()
+		cnvs.save()
 
 		# attempt to print using lpr
 		cmd = ["lpr"]
@@ -196,7 +253,35 @@ class NewOrderFrame(ttk.Frame):
 			# if the customer does not exist, show an error messagebox
 			tk.messagebox.showerror("Error", "Customer not found")
 
-		self.sevice_order_form = ServiceOrderForm(custy_info, self.ent_order_description.get())
+		# determine font choice using APP_SETTINGS
+		ubuntu_sans_candidates = APP_SETTINGS.get("ubuntu_font_candidates", [
+			"/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf",
+			"/usr/share/fonts/truetype/ubuntu/Ubuntu-Medium.ttf",
+			"/usr/share/fonts/truetype/Ubuntu/Ubuntu-M.ttf",
+			"/usr/share/fonts/truetype/Ubuntu/Ubuntu-Medium.ttf",
+		])
+
+		# prefer bundled font when configured
+		bundled_font_path = None
+		if APP_SETTINGS.get("prefer_bundled_fonts"):
+			candidate = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fonts", APP_SETTINGS.get("bundled_font_filename", "Ubuntu-M.ttf"))
+			if os.path.exists(candidate):
+				bundled_font_path = candidate
+
+		ubuntu_font_path = None
+		if not bundled_font_path:
+			for p in ubuntu_sans_candidates:
+				if os.path.exists(p):
+					ubuntu_font_path = p
+					break
+
+		if bundled_font_path:
+			self.sevice_order_form = ServiceOrderForm(custy_info, self.ent_order_description.get(), pdf_font_name="Ubuntu-M", pdf_font_size=APP_SETTINGS.get("default_pdf_font_size", 16), pdf_font_path=bundled_font_path)
+		elif ubuntu_font_path:
+			self.sevice_order_form = ServiceOrderForm(custy_info, self.ent_order_description.get(), pdf_font_name="Ubuntu-M", pdf_font_size=APP_SETTINGS.get("default_pdf_font_size", 16), pdf_font_path=ubuntu_font_path)
+		else:
+			# fallback to default from APP_SETTINGS
+			self.sevice_order_form = ServiceOrderForm(custy_info, self.ent_order_description.get())
 		try:
 			pdf_path = self.sevice_order_form.save_as_pdf_and_print()
 			tk.messagebox.showinfo("Printed", f"Service order saved and sent to printer:\n{pdf_path}")

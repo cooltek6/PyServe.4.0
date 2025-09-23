@@ -1,0 +1,12 @@
+{
+  "prefer_bundled_fonts": false,
+  "bundled_font_filename": "Ubuntu-M.ttf",
+  "default_pdf_font_name": "Helvetica",
+  "default_pdf_font_size": 16,
+  "ubuntu_font_candidates": [
+    "/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf",
+    "/usr/share/fonts/truetype/ubuntu/Ubuntu-Medium.ttf",
+    "/usr/share/fonts/truetype/Ubuntu/Ubuntu-M.ttf",
+    "/usr/share/fonts/truetype/Ubuntu/Ubuntu-Medium.ttf"
+  ]
+}
