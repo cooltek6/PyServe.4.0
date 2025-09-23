@@ -1,12 +1,12 @@
 # pyserve.4
 
-A Python project for serving applications.
+a python project for serving work orders
 
 ## Features
 
-- Fast and lightweight
-- Easy to configure
-- Extensible architecture
+- fast and lightweight
+- easy to configure
+- extensible architecture (upcoming version)
 
 ## Installation
 
@@ -22,7 +22,7 @@ python main.py
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+pull requests are welcome. for major changes, please open an issue first to discuss what you would like to change
 
 ## License
 

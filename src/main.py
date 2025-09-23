@@ -7,6 +7,15 @@ from tkinter import ttk
 import tkinter.messagebox as msg
 from tkinter.messagebox import showerror
 from tinydb import TinyDB, Query
+import os
+import subprocess
+from datetime import datetime
+try:
+	from reportlab.lib.pagesizes import letter
+	from reportlab.pdfgen import canvas
+except Exception:
+	letter = None
+	canvas = None
 
 # create an instance of the db globally
 db = TinyDB("db.json")
@@ -22,51 +31,92 @@ class ServiceOrderForm:
 		self.custy_info = custy_info
 		self.work_description = work_description
 
-	# create a method to print the form
-	def print_form(self):
-		form = f"""
+	# replaced print_form with PDF generation + print
+	def _render_form_text(self) -> str:
+		"""Return the plain-text representation of the service order."""
+		return f"""
 		Crossroads Technical Services
 		Service Order Form
 		-----------------------------------------------------
-		Customer Name: {self.custy_info['name']}
-		Address: {self.custy_info['address']}
-		City: {self.custy_info['city']}
-		Zipcode: {self.custy_info['zipcode']}
-		Phone: {self.custy_info['phone']}
-		Email: {self.custy_info['email']}
+		Customer Name: {self.custy_info.get('name','')}
+		Address: {self.custy_info.get('address','')}
+		City: {self.custy_info.get('city','')}
+		Zipcode: {self.custy_info.get('zipcode','')}
+		Phone: {self.custy_info.get('phone','')}
+		Email: {self.custy_info.get('email','')}
 		-----------------------------------------------------
 		Work Description: {self.work_description}
 
-		
+
 		_____________________________________________________
-		
+
 		Service Performed:
 
-  
-  
-		
+
+
 		_____________________________________________________
-		
+
 		Parts Used:
-  
-  
-  
-  
-		
+
+
+
 		______________________________________________________
-		
+
 		Notes:
-  
-  
-  
-  
+
+
+
 		______________________________________________________
 
 		Technician Signature: __________________   Date: _____________
-  
+
 		Customer Signature: __________________   Date: _____________
 		"""
-		print(form)
+
+	def save_as_pdf_and_print(self, printer_name: str | None = None, completed_dir: str | None = None) -> str:
+		"""Render the service order to a PDF, save it into `completed_dir` (created if needed), and send to printer via lpr.
+
+		Returns the path to the PDF file on success. Raises RuntimeError on failure.
+		"""
+		# lazy-check for reportlab
+		if canvas is None or letter is None:
+			raise RuntimeError("reportlab is required for PDF output — install with: pip install reportlab")
+
+		# ensure completed directory
+		if completed_dir is None:
+			base_dir = os.path.dirname(os.path.abspath(__file__))
+			completed_dir = os.path.join(base_dir, "completed")
+		os.makedirs(completed_dir, exist_ok=True)
+
+		# create a timestamped filename
+		timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+		name = (self.custy_info.get('name') or 'unknown').strip().replace(' ', '_')[:40]
+		filename = f"service_order_{name}_{timestamp}.pdf"
+		pdf_path = os.path.join(completed_dir, filename)
+
+		# render PDF
+		c = canvas.Canvas(pdf_path, pagesize=letter)
+		text = c.beginText(40, 750)
+		text.setFont("Courier", 10)
+		for line in self._render_form_text().splitlines():
+			for chunk in [line[i:i+90] for i in range(0, len(line), 90)]:
+				text.textLine(chunk)
+		c.drawText(text)
+		c.showPage()
+		c.save()
+
+		# attempt to print using lpr
+		cmd = ["lpr"]
+		if printer_name:
+			cmd += ["-P", printer_name]
+		try:
+			subprocess.run(cmd + [pdf_path], check=True)
+		except FileNotFoundError:
+			raise RuntimeError(f"lpr not found. PDF saved to: {pdf_path}")
+		except subprocess.CalledProcessError as exc:
+			raise RuntimeError(f"Printing failed: {exc}. PDF saved to: {pdf_path}") from exc
+
+		return pdf_path
 
 
 # create the new service order window
@@ -147,8 +197,13 @@ class NewOrderFrame(ttk.Frame):
 			tk.messagebox.showerror("Error", "Customer not found")
 
 		self.sevice_order_form = ServiceOrderForm(custy_info, self.ent_order_description.get())
-		self.sevice_order_form.print_form()
-		self.master.destroy()
+		try:
+			pdf_path = self.sevice_order_form.save_as_pdf_and_print()
+			tk.messagebox.showinfo("Printed", f"Service order saved and sent to printer:\n{pdf_path}")
+		except Exception as exc:
+			tk.messagebox.showerror("Print Error", str(exc))
+		finally:
+			self.master.destroy()
 		     
 
 # create the new customer window
@@ -331,5 +386,5 @@ if __name__ == "__main__":
 	main_window = App()
 	StartFrame(main_window)
 	main_window.mainloop()
- 
- 
+
+
