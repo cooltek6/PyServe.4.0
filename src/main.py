@@ -52,7 +52,7 @@ class ServiceOrderForm:
 
 		pdf_font_name/pdf_font_size/pdf_font_path control the font used when
 		rendering the PDF. pdf_font_path may point to a .ttf file — if provided
-		we'll attempt to register it under pdf_font_name.
+		this will attempt to register it under pdf_font_name.
 		"""
 		self.custy_info = custy_info
 		self.work_description = work_description
